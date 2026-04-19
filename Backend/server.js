@@ -13,15 +13,27 @@ const connectDB = require("./config/db");
 const app = express();
 const server = http.createServer(app);
 
+// ================= ALLOWED ORIGINS =================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://quiz-vert-six-98.vercel.app"
+];
+
+// ================= SOCKET.IO =================
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
-  },
+    credentials: true
+  }
 });
 
 // ================= MIDDLEWARE =================
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000" }));
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Make io accessible in routes
@@ -39,10 +51,12 @@ app.use("/api/exam", examRoutes);
 app.use("/api/question", questionRoutes);
 app.use("/api/result", resultRoutes);
 
-// ================= TEST =================
-app.get("/", (req, res) => res.send("🚀 CBT Server running"));
+// ================= TEST ROUTE =================
+app.get("/", (req, res) => {
+  res.send("🚀 CBT Server running");
+});
 
-// ================= SOCKET.IO =================
+// ================= SOCKET EVENTS =================
 io.on("connection", (socket) => {
   console.log("✅ Client connected:", socket.id);
 
@@ -58,7 +72,7 @@ io.on("connection", (socket) => {
 
   socket.on("log_violation", (data) => {
     console.log("⚠️ VIOLATION:", data);
-    // Broadcast to teacher
+
     io.to(`teacher_${data.teacherId}`).emit("student_violation", data);
   });
 
@@ -69,4 +83,7 @@ io.on("connection", (socket) => {
 
 // ================= SERVER =================
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
