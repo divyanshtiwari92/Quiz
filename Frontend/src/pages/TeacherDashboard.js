@@ -16,22 +16,20 @@ function toLocalISO(val) {
   const p = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-function fmtDateTime(val) {
-  if (!val) return "";
+const fmtDateTime = (value) => {
+  if (!value) return "";
 
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return "";
+  const d = new Date(value);
 
   return d.toLocaleString("en-IN", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric",
+    year: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata"
+    hour12: true
   });
-}
+};
 
 function Toggle({ value, onChange, label }) {
   return (
@@ -361,49 +359,52 @@ function TeacherDashboard() {
     if(d.success){setExams(p=>p.map(e=>e._id===id?d.exam:e));setEditExam(null);showToast("✅ Updated!","success");}
   };
 
-  const handleCreate = async () => {
-  if(!form.subject||!form.duration||!form.section){
-    showToast("Fill required fields","warn");
+const handleCreate = async () => {
+  if (!form.subject || !form.duration || !form.section) {
+    showToast("Fill required fields", "warn");
     return;
   }
 
-  if(form.endTime && new Date(form.endTime)<=new Date()){
-    showToast("⛔ End time already passed. Set a future time.","error");
+  if (form.endTime && new Date(form.endTime) <= new Date()) {
+    showToast("⛔ End time already passed. Set a future time.", "error");
     return;
   }
 
   setCreating(true);
 
-  try{
-    const res = await authFetch(`${API}/exam/create`,{
-      method:"POST",
-      body:JSON.stringify({
-        subject:form.subject,
-        courseCode:form.courseCode,
-        duration:Number(form.duration),
-        section:form.section,
-        teacherId:user.id,
-        positiveMarks:form.posMarks,
-        negativeMarks:form.negMarks,
-        showResult:form.showResult,
-        showQuestions:form.showQuestions,
+  try {
+    const res = await authFetch(`${API}/exam/create`, {
+      method: "POST",
+      body: JSON.stringify({
+        subject: form.subject,
+        courseCode: form.courseCode,
+        duration: Number(form.duration),
+        section: form.section,
+        teacherId: user.id,
+        positiveMarks: form.posMarks,
+        negativeMarks: form.negMarks,
+        showResult: form.showResult,
+        showQuestions: form.showQuestions,
 
-        startTime: form.startTime ? new Date(form.startTime).toISOString() : null,
-        endTime: form.endTime ? new Date(form.endTime).toISOString() : null
+        // FIXED TIME
+        startTime: form.startTime ? form.startTime + ":00" : null,
+        endTime: form.endTime ? form.endTime + ":00" : null
       })
     });
 
     const d = await res.json();
 
-    if(d.success){
-      setExams(p=>[d.exam,...p]);
+    if (d.success) {
+      setExams((p) => [d.exam, ...p]);
       setForm(emptyForm);
-      showToast("✅ Draft created! Add questions then publish.","success");
+      showToast("✅ Draft created! Add questions then publish.", "success");
       setActiveTab("exams");
+    } else {
+      showToast("Failed", "error");
     }
 
-  }catch{
-    showToast("Failed","error");
+  } catch {
+    showToast("Failed", "error");
   }
 
   setCreating(false);

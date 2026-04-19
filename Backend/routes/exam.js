@@ -86,8 +86,8 @@ router.post("/create", authMiddleware, async (req, res) => {
       negativeMarks: negativeMarks || 0,
       showResult: showResult !== undefined ? showResult : true,
       showQuestions: showQuestions || false,
-      startTime: startTime ? new Date(startTime) : null,
-      endTime:   endTime   ? new Date(endTime)   : null,
+     startTime: startTime || null,
+endTime: endTime || null,
       hasSets: hasSets || false,
       published: false,
     });
@@ -233,8 +233,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
       {
         subject, courseCode, duration, section,
         positiveMarks, negativeMarks, showResult, showQuestions,
-        startTime: startTime ? new Date(startTime) : null,
-        endTime:   endTime   ? new Date(endTime)   : null,
+      startTime: startTime || null,
+endTime: endTime || null,
       },
       { new: true }
     );
