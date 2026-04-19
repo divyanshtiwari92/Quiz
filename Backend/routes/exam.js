@@ -70,6 +70,35 @@ function parseExcelDateTime(dateVal, ampmVal) {
   return d;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   HELPER: parse a datetime string safely as LOCAL time.
+
+   The frontend sends "2026-04-19T21:08:00+05:30" (with offset)
+   after the fix. But if an old string "2026-04-19T21:08" arrives
+   (no offset), new Date() treats it as UTC — wrong by ±offset.
+   
+   This helper detects strings without timezone info and appends
+   the server's local offset so they are interpreted correctly.
+══════════════════════════════════════════════════════════════ */
+function parseLocalDate(val) {
+  if (!val) return null;
+  if (typeof val !== "string") return new Date(val);
+  const trimmed = val.trim();
+  // If it already has timezone info (Z, +, or - after time part) — parse directly
+  if (/[Z+\-]\d{2}:?\d{2}$/.test(trimmed) || trimmed.endsWith("Z")) {
+    const d = new Date(trimmed);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // No timezone — append local server offset so it's treated as local time
+  const serverOffset = -new Date().getTimezoneOffset(); // minutes, positive = ahead of UTC
+  const sign   = serverOffset >= 0 ? "+" : "-";
+  const absOff = Math.abs(serverOffset);
+  const hh     = String(Math.floor(absOff / 60)).padStart(2, "0");
+  const mm     = String(absOff % 60).padStart(2, "0");
+  const d = new Date(`${trimmed}:00${sign}${hh}:${mm}`);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 /* ── CREATE EXAM (draft — no publish time check here) ── */
 router.post("/create", authMiddleware, async (req, res) => {
   try {
@@ -86,8 +115,8 @@ router.post("/create", authMiddleware, async (req, res) => {
       negativeMarks: negativeMarks || 0,
       showResult: showResult !== undefined ? showResult : true,
       showQuestions: showQuestions || false,
-      startTime: startTime ? new Date(startTime) : null,
-      endTime:   endTime   ? new Date(endTime)   : null,
+      startTime: parseLocalDate(startTime),
+      endTime:   parseLocalDate(endTime),
       hasSets: hasSets || false,
       published: false,
     });
@@ -233,8 +262,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
       {
         subject, courseCode, duration, section,
         positiveMarks, negativeMarks, showResult, showQuestions,
-        startTime: startTime ? new Date(startTime) : null,
-        endTime:   endTime   ? new Date(endTime)   : null,
+        startTime: parseLocalDate(startTime),
+        endTime:   parseLocalDate(endTime),
       },
       { new: true }
     );
