@@ -8,8 +8,8 @@ const examSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
   positiveMarks: { type: Number, default: 1 },
   negativeMarks: { type: Number, default: 0 },
-  startTime: { type: Date, default: null },
-  endTime: { type: Date, default: null },
+  startTime: { type: String, default: null },
+endTime: { type: String, default: null },
   showResult: { type: Boolean, default: true },
   showQuestions: { type: Boolean, default: false }, // allow students to view questions after result
   hasSets: { type: Boolean, default: false },
