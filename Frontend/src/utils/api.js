@@ -1,7 +1,10 @@
-export const API = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+export const API =
+  process.env.REACT_APP_API_URL ||
+  "https://quiz-backend-9jwm.onrender.com/api";
 
 export const authFetch = async (url, options = {}) => {
   const token = localStorage.getItem("token");
+
   return fetch(url, {
     ...options,
     headers: {
