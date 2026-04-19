@@ -23,7 +23,6 @@ function ViewQuestions({ exam, onClose }) {
   }, [exam._id, user.id]);
 
   const correct = data?.questions?.filter(q => q.studentAnswer === q.correctAnswer).length || 0;
-  const total = data?.questions?.length || 0;
   const wrong = data?.questions?.filter(q => q.studentAnswer && q.studentAnswer !== q.correctAnswer).length || 0;
   const skipped = data?.questions?.filter(q => !q.studentAnswer).length || 0;
 
