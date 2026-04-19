@@ -362,16 +362,52 @@ function TeacherDashboard() {
   };
 
   const handleCreate = async () => {
-    if(!form.subject||!form.duration||!form.section){showToast("Fill required fields","warn");return;}
-    if(form.endTime && new Date(form.endTime)<=new Date()){showToast("⛔ End time already passed. Set a future time.","error");return;}
-    setCreating(true);
-    try{
-      const res=await authFetch(`${API}/exam/create`,{method:"POST",body:JSON.stringify({subject:form.subject,courseCode:form.courseCode,duration:Number(form.duration),section:form.section,teacherId:user.id,positiveMarks:form.posMarks,negativeMarks:form.negMarks,showResult:form.showResult,showQuestions:form.showQuestions,startTime:form.startTime||null,endTime:form.endTime||null})});
-      const d=await res.json();
-      if(d.success){setExams(p=>[d.exam,...p]);setForm(emptyForm);showToast("✅ Draft created! Add questions then publish.","success");setActiveTab("exams");}
-    }catch{showToast("Failed","error");}
-    setCreating(false);
-  };
+  if(!form.subject||!form.duration||!form.section){
+    showToast("Fill required fields","warn");
+    return;
+  }
+
+  if(form.endTime && new Date(form.endTime)<=new Date()){
+    showToast("⛔ End time already passed. Set a future time.","error");
+    return;
+  }
+
+  setCreating(true);
+
+  try{
+    const res = await authFetch(`${API}/exam/create`,{
+      method:"POST",
+      body:JSON.stringify({
+        subject:form.subject,
+        courseCode:form.courseCode,
+        duration:Number(form.duration),
+        section:form.section,
+        teacherId:user.id,
+        positiveMarks:form.posMarks,
+        negativeMarks:form.negMarks,
+        showResult:form.showResult,
+        showQuestions:form.showQuestions,
+
+        startTime: form.startTime ? new Date(form.startTime).toISOString() : null,
+        endTime: form.endTime ? new Date(form.endTime).toISOString() : null
+      })
+    });
+
+    const d = await res.json();
+
+    if(d.success){
+      setExams(p=>[d.exam,...p]);
+      setForm(emptyForm);
+      showToast("✅ Draft created! Add questions then publish.","success");
+      setActiveTab("exams");
+    }
+
+  }catch{
+    showToast("Failed","error");
+  }
+
+  setCreating(false);
+};
 
   const handleAddQ = async () => {
     if(!selExam||!qText.trim()||qOpts.some(o=>!o.trim())||!qAns){showToast("Fill all fields","warn");return;}
