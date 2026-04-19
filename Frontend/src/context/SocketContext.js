@@ -8,8 +8,13 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://localhost:5000";
-    socketRef.current = io(SOCKET_URL, { transports: ["websocket", "polling"] });
+    const SOCKET_URL =
+      process.env.REACT_APP_SOCKET_URL ||
+      "https://quiz-backend-9jwm.onrender.com";
+
+    socketRef.current = io(SOCKET_URL, {
+      transports: ["websocket", "polling"],
+    });
 
     socketRef.current.on("connect", () => setConnected(true));
     socketRef.current.on("disconnect", () => setConnected(false));
@@ -20,7 +25,9 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, connected }}>
+    <SocketContext.Provider
+      value={{ socket: socketRef.current, connected }}
+    >
       {children}
     </SocketContext.Provider>
   );
